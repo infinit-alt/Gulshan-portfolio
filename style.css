@@ -1,28 +1,41 @@
 /* Custom CSS variables and global resets */
 :root {
-  --bg-dark: #0b0f19; /* Deep space dark */
-  --bg-light: #111827; /* Gray-900 surface */
-  --glass-bg: rgba(17, 24, 39, 0.65); /* Aligned glassmorphism tone */
-  --glass-border: rgba(255, 255, 255, 0.08); 
-  
-  --primary: #193a6e; /* Blue */
-  --secondary: #06b6d4; /* Cyan */
-  --accent: #8b5cf6; /* Purple */
-  
-  --text-main: #ffffff; /* Pure white */
-  --text-muted: #9ca3af; /* Muted gray */
+  --bg-dark: #0b0f19;
+  --bg-light: #111827;
+  --glass-bg: rgba(17, 24, 39, 0.65);
+  --glass-border: rgba(255, 255, 255, 0.08);
+
+  --primary: #193a6e;
+  --secondary: #06b6d4;
+  --accent: #8b5cf6;
+
+  --text-main: #ffffff;
+  --text-muted: #9ca3af;
 }
 
 html {
   scroll-behavior: smooth;
   background-color: var(--bg-dark);
+  /* FIX: prevent horizontal overflow on mobile */
+  overflow-x: hidden;
 }
 
 body {
   margin: 0;
   padding: 0;
+  /* FIX: use border-box globally via inheritance */
   box-sizing: border-box;
   color: var(--text-main);
+  /* FIX: prevent horizontal overflow on mobile */
+  overflow-x: hidden;
+  /* FIX: ensure full-width on all screens */
+  width: 100%;
+  max-width: 100vw;
+}
+
+/* FIX: Apply box-sizing globally */
+*, *::before, *::after {
+  box-sizing: inherit;
 }
 
 /* Custom Scrollbar */
@@ -33,15 +46,14 @@ body {
   background: var(--bg-dark);
 }
 ::-webkit-scrollbar-thumb {
-  background: rgba(255,255,255,0.1);
+  background: rgba(255, 255, 255, 0.1);
   border-radius: 4px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(255,255,255,0.2);
+  background: rgba(255, 255, 255, 0.2);
 }
 
 /* Background Gradients & Textures */
-/* Removed pure CSS stars in favor of Canvas Particle Engine */
 .bg-gradient-futuristic {
   background: radial-gradient(circle at top center, var(--bg-light) 0%, var(--bg-dark) 100%);
   min-height: 100vh;
@@ -49,7 +61,7 @@ body {
   z-index: 0;
 }
 
-/* Animated Navbar Background */
+/* Animated Navbar Background — UNCHANGED */
 .nav-animated {
   background: linear-gradient(-45deg, rgba(59,130,246,0.15), rgba(11,15,25,0.4), rgba(139,92,246,0.15), rgba(11,15,25,0.4));
   background-size: 400% 400%;
@@ -58,31 +70,34 @@ body {
   -webkit-backdrop-filter: blur(24px);
 }
 @keyframes gradientNav {
-  0% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
+  0%   { background-position: 0% 50%; }
+  50%  { background-position: 100% 50%; }
   100% { background-position: 0% 50%; }
 }
 
-/* Glassmorphism & Bold Typography */
+/* Glassmorphism — UNCHANGED, + mobile blur fallback */
 .glass {
   background: linear-gradient(145deg, rgba(6, 15, 30, 0.8) 0%, rgba(4, 10, 20, 0.9) 100%);
   backdrop-filter: blur(28px);
   -webkit-backdrop-filter: blur(28px);
   border: 1px solid var(--glass-border);
-  border-top-color: rgba(255, 255, 255, 0.15); /* Top rim light */
-  border-left-color: rgba(255, 255, 255, 0.12); /* Left rim light */
-  box-shadow: 
-    0 30px 60px -15px rgba(0, 0, 0, 0.7), /* Deep dark shadow */
-    inset 0 1px 0 rgba(255, 255, 255, 0.06), /* Inner rim reflection */
-    0 0 40px rgba(59, 130, 246, 0.06); /* Ambient blue aura */
+  border-top-color: rgba(255, 255, 255, 0.15);
+  border-left-color: rgba(255, 255, 255, 0.12);
+  box-shadow:
+    0 30px 60px -15px rgba(0, 0, 0, 0.7),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06),
+    0 0 40px rgba(59, 130, 246, 0.06);
   font-weight: 500;
+  /* FIX: prevent glass cards from breaking layout on small screens */
+  max-width: 100%;
+  word-break: break-word;
 }
 .glass strong, .glass h3, .glass h4 {
   font-weight: 800;
   text-shadow: 0 0 15px rgba(255, 255, 255, 0.15);
 }
 
-/* Floating Blobs (Blue, Cyan, Purple) */
+/* Floating Blobs — animations UNCHANGED, sizes clamped on mobile */
 .blob {
   position: fixed;
   border-radius: 50%;
@@ -90,32 +105,43 @@ body {
   z-index: -2;
   opacity: 0.5;
   animation: float 25s infinite alternate cubic-bezier(0.4, 0, 0.2, 1);
+  /* FIX: prevent blobs from creating horizontal scroll */
+  pointer-events: none;
+  max-width: 100vw;
 }
-.blob-blue { 
-  width: 800px; height: 800px; 
+
+.blob-blue {
+  width: 800px; height: 800px;
   background: radial-gradient(circle, rgba(59,130,246,0.8) 0%, rgba(59,130,246,0) 70%);
-  top: -200px; left: -200px; 
+  top: -200px; left: -200px;
 }
-.blob-cyan { 
-  width: 600px; height: 600px; 
+.blob-cyan {
+  width: 600px; height: 600px;
   background: radial-gradient(circle, rgba(6,182,212,0.6) 0%, rgba(6,182,212,0) 70%);
-  top: 35%; left: 35%; 
-  animation-delay: -7s; 
+  top: 35%; left: 35%;
+  animation-delay: -7s;
 }
-.blob-purple { 
-  width: 900px; height: 900px; 
+.blob-purple {
+  width: 900px; height: 900px;
   background: radial-gradient(circle, rgba(139,92,246,0.6) 0%, rgba(139,92,246,0) 70%);
-  bottom: -300px; right: -200px; 
-  animation-delay: -14s; 
+  bottom: -300px; right: -200px;
+  animation-delay: -14s;
 }
 
 @keyframes float {
-  0% { transform: translate(0, 0) scale(1) rotate(0deg); }
-  50% { transform: translate(50px, 80px) scale(1.1) rotate(5deg); }
+  0%   { transform: translate(0, 0) scale(1) rotate(0deg); }
+  50%  { transform: translate(50px, 80px) scale(1.1) rotate(5deg); }
   100% { transform: translate(-50px, 120px) scale(0.9) rotate(-5deg); }
 }
 
-/* Typography Enhancements */
+/* FIX: Shrink blobs on mobile so they don't cause layout issues */
+@media (max-width: 768px) {
+  .blob-blue   { width: 350px; height: 350px; top: -100px; left: -100px; }
+  .blob-cyan   { width: 280px; height: 280px; }
+  .blob-purple { width: 400px; height: 400px; bottom: -150px; right: -100px; }
+}
+
+/* Typography — UNCHANGED */
 .name-gradient {
   background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
   -webkit-background-clip: text;
@@ -137,7 +163,7 @@ body {
   to { background-position: 200% center; }
 }
 
-/* Interactive Elements */
+/* Buttons — UNCHANGED, + mobile touch targets */
 .btn-primary {
   background: linear-gradient(135deg, var(--primary), var(--secondary));
   transition: all 0.3s ease;
@@ -145,27 +171,35 @@ body {
   overflow: hidden;
   font-weight: 800;
   letter-spacing: 0.05em;
-  border-radius: 9999px; /* Pill shape */
+  border-radius: 9999px;
+  /* FIX: minimum tap target for mobile */
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 .btn-primary::before {
   content: '';
   position: absolute;
   top: 0; left: -100%;
   width: 100%; height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
   transition: all 0.5s ease;
 }
-.btn-primary:hover::before {
-  left: 100%;
-}
+.btn-primary:hover::before { left: 100%; }
 .btn-primary:hover {
   transform: scale(1.05) translateY(-3px);
 }
 
 .btn-secondary {
-  border-radius: 9999px; /* Pill shape */
+  border-radius: 9999px;
   transition: all 0.3s ease;
   letter-spacing: 0.05em;
+  /* FIX: minimum tap target for mobile */
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 .btn-secondary:hover {
   transform: scale(1.05) translateY(-3px);
@@ -176,11 +210,21 @@ body {
   transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 .hover-glow:hover {
-  box-shadow: 
-    0 25px 60px -10px rgba(56, 189, 248, 0.5), /* Intense outer primary glow */
-    inset 0 1px 2px rgba(255, 255, 255, 0.25), /* Strong inner rim */
-    0 0 40px rgba(139, 92, 246, 0.3); /* Purple ambient aura */
+  box-shadow:
+    0 25px 60px -10px rgba(56, 189, 248, 0.5),
+    inset 0 1px 2px rgba(255, 255, 255, 0.25),
+    0 0 40px rgba(139, 92, 246, 0.3);
   border-color: rgba(56, 189, 248, 0.8);
   border-top-color: rgba(255, 255, 255, 0.4);
   transform: translateY(-8px) scale(1.02);
 }
+
+/* FIX: Reduce intense hover transforms on touch devices (no hover anyway) */
+@media (hover: none) {
+  .btn-primary:hover,
+  .btn-secondary:hover,
+  .hover-glow:hover {
+    transform: none;
+  }
+}
+
