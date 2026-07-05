@@ -140,12 +140,13 @@
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      width: 44px;
-      height: 44px;
+      width: 32px;
+      height: 32px;
       border-radius: 9999px;
       border: 1px solid rgba(255,255,255,0.22);
       background: rgba(255,255,255,0.08);
       color: #ffffff;
+      font-size: 0.8rem;
       transition: transform 220ms ease, background 220ms ease, border-color 220ms ease, color 220ms ease;
       backdrop-filter: blur(12px);
       cursor: pointer;
@@ -483,7 +484,7 @@
         >
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className={`flex justify-between items-center transition-all duration-500 ${scrolled ? 'h-16' : 'h-24'}`} style={{ width: '100%' }}>
-              <div className="flex items-center gap-0">
+              <div className="flex items-center gap-1">
                 <a
                   href="#home"
                   className="flex items-center flex-shrink-0 cursor-pointer text-2xl md:text-3xl font-bold tracking-tight text-white"
@@ -492,12 +493,15 @@
                   GS
                   <span className="text-secondary font-mono ml-1">&gt;</span>
                 </a>
-                <div className="flex flex-col items-center gap-0 text-center px-2">
-                  <span className="text-[10px] text-textMuted leading-tight">Refresh your mind here</span>
-                  <button id="audio-toggle-btn" className="audio-toggle-button" type="button" aria-label="Play or pause background music">
-                    <i className="fas fa-volume-high"></i>
-                  </button>
-                </div>
+                <button
+                  id="audio-toggle-btn"
+                  className="audio-toggle-button w-9 h-9 p-0 text-[12px]"
+                  type="button"
+                  aria-label="Play or pause background music"
+                >
+                  <i className="fas fa-volume-high"></i>
+                </button>
+                <span className="text-[9px] text-textMuted leading-tight tracking-wide">refresh your mind</span>
               </div>
 
               <div className="hidden md:flex space-x-2 items-center bg-white/5 px-2 py-1.5 rounded-full border border-white/5 backdrop-blur-md shadow-inner">
