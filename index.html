@@ -1,0 +1,1563 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GULSHAN SINGH | Developer</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            background: '#020008', // deep cosmic void
+            surface: '#0d0d1a',    // dark indigo surface
+            primary: '#f97316',    // orange 500
+            secondary: '#06b6d4',  // cyan
+            accent: '#8b5cf6',     // purple
+            textLight: '#ffffff',
+            textMuted: '#9ca3af',
+          },
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body {
+      background-color: #020008;
+      scroll-behavior: smooth;
+    }
+    .nav-brand-bg .audio-toggle-button {
+      margin-top: 0.2rem;
+    }
+    .premium-word {
+      position: relative;
+      display: inline-block;
+      padding: 0 0.08em;
+      color: inherit;
+      transition: transform 220ms cubic-bezier(.2,.8,.2,1), color 220ms ease, text-shadow 220ms ease;
+      will-change: transform, color, text-shadow;
+      cursor: default;
+      transform: translateZ(0);
+      -webkit-font-smoothing: antialiased;
+      --hover-color: #ffd166;
+      --hover-glow: rgba(255, 209, 102, 0.35);
+    }
+    .premium-word::after {
+      content: '';
+      position: absolute;
+      left: 0;
+      bottom: -0.12em;
+      width: 100%;
+      height: 1px;
+      background: linear-gradient(90deg, var(--hover-color, #ffd166), rgba(255,255,255,0.9));
+      transform: scaleX(0);
+      transform-origin: left;
+      transition: transform 280ms cubic-bezier(.2,.8,.2,1);
+      will-change: transform;
+    }
+    .premium-word:hover,
+    .premium-word.is-active {
+      color: var(--hover-color, #ffd166);
+      transform: translateY(-1px) scale(1.05);
+      text-shadow: 0 0 14px var(--hover-glow, rgba(255, 209, 102, 0.35)), 0 0 28px rgba(255,255,255,0.08);
+    }
+    .premium-word:hover::after,
+    .premium-word.is-active::after {
+      transform: scaleX(1);
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .premium-word,
+      .premium-word::after {
+        transition: none;
+      }
+    }
+    /* ===== Exomium background layer (WebGL particle field) =====
+       Replaces the previous aurora/nebula-orb/grid CSS background.
+       All three layers below are fixed, z-index:0, pointer-events:none —
+       they sit strictly behind #root (z-index:2) and nav (z-index:50). */
+    #scene-canvas {
+      position: fixed; inset: 0; z-index: 0; pointer-events: none;
+      width: 100vw; height: 100vh; display: block;
+    }
+    #bg-grain {
+      position: fixed; inset: 0; z-index: 0; pointer-events: none;
+      opacity: 0.035; mix-blend-mode: overlay;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    }
+    #vignette {
+      position: fixed; inset: 0; z-index: 0; pointer-events: none;
+      background: radial-gradient(ellipse 100% 100% at 50% 50%, transparent 40%, rgba(2,0,8,0.78) 100%);
+    }
+    .glass {
+      background: rgba(13,13,26,0.65);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(139,92,246,0.14);
+    }
+    .nav-animated {
+      background: rgba(2,0,8,0.88);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+    }
+    .name-gradient {
+      font-family: 'Orbitron', sans-serif;
+      font-size: clamp(70px, 10vw, 170px);
+      line-height: 0.95;
+      text-align: center;
+      font-weight: 900;
+      letter-spacing: 4px;
+      text-transform: uppercase;
+      position: relative;
+      display: block;
+      white-space: nowrap;
+      background: linear-gradient(
+        180deg,
+        #fff4d0 0%,
+        #ffd06b 20%,
+        #ff9d00 45%,
+        #ff6a00 70%,
+        #ffb347 100%
+      );
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      color: transparent;
+      text-shadow: none;
+    }
+    .btn-primary {
+      background: linear-gradient(135deg, #f97316, #8b5cf6);
+      transition: all 0.3s ease;
+    }
+    .btn-primary:hover { filter: brightness(1.2); }
+    .btn-secondary { transition: all 0.3s ease; }
+    .audio-toggle-button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 44px;
+      height: 44px;
+      border-radius: 9999px;
+      border: 1px solid rgba(255,255,255,0.22);
+      background: rgba(255,255,255,0.08);
+      color: #ffffff;
+      transition: transform 220ms ease, background 220ms ease, border-color 220ms ease, color 220ms ease;
+      backdrop-filter: blur(12px);
+      cursor: pointer;
+    }
+    .audio-toggle-button:hover {
+      transform: scale(1.05);
+      background: rgba(255,255,255,0.14);
+    }
+    .audio-toggle-button.active {
+      background: #fb923c;
+      border-color: rgba(251,146,60,0.55);
+      color: #111111;
+    }
+    #root { position: relative; z-index: 2; }
+    nav { z-index: 50 !important; }
+  </style>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/devicons/devicon@v2.15.1/devicon.min.css">
+  <link rel="stylesheet" href="style.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/framer-motion@10.16.4/dist/framer-motion.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+  <script type="text/javascript">
+      (function () {
+        emailjs.init("YOUR_PUBLIC_KEY");
+      })();
+  </script>
+</head>
+
+<body class="text-textMuted font-sans antialiased overflow-x-hidden selection:bg-primary selection:text-textLight font-medium">
+  <!-- Exomium background layers (WebGL particle field) -->
+  <canvas id="scene-canvas"></canvas>
+  <div id="vignette"></div>
+  <div id="bg-grain"></div>
+
+  <audio id="background-music" autoplay loop preload="auto" playsinline style="display:none">
+    <source src="background-music.mp4" type="audio/mp4">
+    <source src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3" type="audio/mpeg">
+    Your browser does not support the audio element.
+  </audio>
+  <button id="music-enable-btn" style="display:none;position:fixed;bottom:1rem;right:1rem;z-index:9999;padding:.9rem 1.2rem;border-radius:999px;background:#fb923c;color:#111;font-weight:700;border:none;box-shadow:0 18px 40px rgba(251,146,60,0.35);cursor:pointer;backdrop-filter:blur(10px);">Enable Music</button>
+
+  <div id="root"></div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      const audio = document.getElementById('background-music');
+      const btn = document.getElementById('music-enable-btn');
+      if (!audio) return;
+
+      const findToggleButton = () => document.getElementById('audio-toggle-btn');
+      const updateToggleButton = () => {
+        const toggleBtn = findToggleButton();
+        if (!toggleBtn) return;
+        const playing = !audio.paused && !audio.ended;
+        toggleBtn.classList.toggle('active', playing);
+        toggleBtn.innerHTML = `<i class="fas ${playing ? 'fa-volume-high' : 'fa-volume-xmark'}"></i>`;
+        toggleBtn.title = playing ? 'Pause music' : 'Play music';
+      };
+
+      document.addEventListener('click', function (event) {
+        const target = event.target instanceof Element ? event.target.closest('#audio-toggle-btn') : null;
+        if (!target) return;
+        if (audio.paused) {
+          audio.play().then(updateToggleButton).catch(() => {
+            console.warn('Playback blocked; user interaction required.');
+          });
+        } else {
+          audio.pause();
+          updateToggleButton();
+        }
+      });
+
+      audio.addEventListener('play', updateToggleButton);
+      audio.addEventListener('pause', updateToggleButton);
+      audio.addEventListener('ended', updateToggleButton);
+
+      audio.volume = 0.45;
+      audio.play().then(updateToggleButton).catch(() => {
+        console.warn('Autoplay blocked; music will start on first user interaction.');
+        if (btn) {
+          btn.style.display = 'block';
+          btn.addEventListener('click', () => {
+            audio.play().then(() => {
+              btn.style.display = 'none';
+              updateToggleButton();
+            }).catch(() => {
+              console.warn('Music still blocked after user interaction.');
+            });
+          });
+        }
+      }).finally(() => {
+        updateToggleButton();
+      });
+    });
+  </script>
+
+  <script type="text/babel">
+    const { useState, useEffect, useRef } = React;
+    const { motion, AnimatePresence } = window.Motion;
+
+    // --- Data ---
+    const skillsData = [
+      {
+        category: "Languages", icon: "fa-code",
+        items: [
+          { name: "Python", logo: "devicon-python-plain colored text-4xl", color: "rgba(56, 189, 248, 0.8)" },
+          { name: "Java", logo: "devicon-java-plain colored text-4xl", color: "rgba(239, 68, 68, 0.8)" },
+          { name: "JavaScript", logo: "devicon-javascript-plain colored text-4xl", color: "rgba(250, 204, 21, 0.8)" },
+          { name: "C", logo: "devicon-c-plain colored text-4xl", color: "rgba(37, 99, 235, 0.8)" }
+        ]
+      },
+      {
+        category: "Web & Frameworks", icon: "fa-layer-group",
+        items: [
+          { name: "HTML", logo: "devicon-html5-plain colored text-4xl", color: "rgba(249, 115, 22, 0.8)" },
+          { name: "CSS", logo: "devicon-css3-plain colored text-4xl", color: "rgba(59, 130, 246, 0.8)" },
+          { name: "NodeJS", logo: "devicon-nodejs-plain colored text-4xl", color: "rgba(34, 197, 94, 0.8)" },
+          { name: "Bootstrap", logo: "devicon-bootstrap-plain colored text-4xl", color: "rgba(139, 92, 246, 0.8)" }
+        ]
+      },
+      {
+        category: "Databases & Tools", icon: "fa-database",
+        items: [
+          { name: "MongoDB", logo: "devicon-mongodb-plain colored text-4xl", color: "rgba(16, 185, 129, 0.8)" },
+          { name: "MySQL", logo: "devicon-mysql-plain colored text-4xl", color: "rgba(14, 165, 233, 0.8)" },
+          { name: "SQLite", logo: "devicon-sqlite-plain colored text-4xl", color: "rgba(96, 165, 250, 0.8)" },
+          { name: "SQL", logo: "fas fa-database text-gray-400 text-4xl", color: "rgba(156, 163, 175, 0.8)" }
+        ]
+      },
+      {
+        category: "Developer Tools", icon: "fa-tools",
+        items: [
+          { name: "Git", logo: "devicon-git-plain colored text-4xl", color: "rgba(239, 68, 68, 0.8)" },
+          { name: "GitHub", logo: "devicon-github-original text-white text-4xl", color: "rgba(255, 255, 255, 0.8)" },
+          { name: "VS Code", logo: "devicon-vscode-plain colored text-4xl", color: "rgba(14, 165, 233, 0.8)" },
+          { name: "Linux", logo: "devicon-linux-plain text-yellow-300 text-4xl", color: "rgba(250, 204, 21, 0.8)" }
+        ]
+      },
+      {
+        category: "AI / ML & Design", icon: "fa-brain",
+        items: [
+        { name: "Web Development", logo: "fas fa-robot text-purple-400 text-4xl", color: "rgba(168, 85, 247, 0.8)" },
+          { name: "Machine Learning", logo: "fas fa-robot text-purple-400 text-4xl", color: "rgba(168, 85, 247, 0.8)" },
+          { name: "NLP", logo: "fas fa-comment-dots text-cyan-400 text-4xl", color: "rgba(34, 211, 238, 0.8)" },
+          { name: "Graphic Design", logo: "fas fa-palette text-pink-400 text-4xl", color: "rgba(244, 114, 182, 0.8)" },
+          { name: "DSA", logo: "fas fa-sitemap text-orange-400 text-4xl", color: "rgba(251, 146, 60, 0.8)" }
+        ]
+      },
+      {
+        category: "Soft Skills", icon: "fa-users",
+        items: [
+          { name: "Problem-Solving", logo: "fas fa-puzzle-piece text-yellow-400 text-4xl", color: "rgba(250, 204, 21, 0.8)" },
+          { name: "Team Player", logo: "fas fa-hands-helping text-teal-400 text-4xl", color: "rgba(45, 212, 191, 0.8)" },
+          { name: "Leadership", logo: "fas fa-star text-amber-400 text-4xl", color: "rgba(251, 191, 36, 0.8)" },
+          { name: "Communication", logo: "fas fa-comments text-blue-400 text-4xl", color: "rgba(96, 165, 250, 0.8)" },
+          { name: "Spirituality", logo: "fas fa-praying-hands text-indigo-400 text-4xl", color: "rgba(99, 102, 241, 0.8)" }
+        ]
+      }
+    ];
+
+    const projectsData = [
+      {
+        title: "AI-Powered Steel Surface Defect Analysis System",
+        date: "Internship • Tata Steel Jamshedpur",
+        link: "https://www.tatasteel.com/",
+        tech: ["React.js", "Node.js", "Express", "Multer", "Claude Vision API", "Computer Vision"],
+        image: "tata-steel-ai.jpg",
+        points: [
+          "Developed an AI-powered inspection system for automated steel surface defect detection and classification.",
+          "Implemented defect analysis across 9 major defect categories with confidence scoring and severity grading.",
+          "Built intelligent non-steel image rejection and auto-generated professional inspection reports.",
+          "Designed a modern industrial dashboard for quality control teams to monitor defects and trends in real time."
+        ],
+        icon: "fa-industry"
+      },
+      {
+        title: "Nepali Text Crawler and Question-Answering System",
+        date: "Completed • 2025",
+        link: "https://github.com/infinit-alt/Nepali-Text-Crawler-QA-System",
+        tech: ["Python", "NLP", "Machine Learning", "Web Crawling", "NLTK"],
+        image: "font image.png",
+        points: [
+          "Completed a scalable web crawler to collect and process Nepali-language textual data from multiple sources.",
+          "Applied NLP pipelines for data cleaning, preprocessing, linguistic analysis, and information extraction.",
+          "Built a question-answering system that retrieves relevant answers from the processed corpus.",
+          "Delivered a full end-to-end project using Python, NLTK, and machine learning workflows."
+        ],
+        icon: "fa-language"
+      }
+    ];
+
+    const experienceData = [
+      {
+        type: "Training",
+        title: "W3GRADS COMPANY",
+        subtitle: "DSA, OOP, Java, C++",
+        date: "Jun 2025 – Jul 2025",
+        image: "myphoto.jpeg",
+        points: [
+          "Completed industry-oriented training in Java and C++ using DSA.",
+          "Gained practical experience in organizing and storing data efficiently, writing optimized and scalable programs.",
+          "Strengthened understanding of core DSA concepts such as arrays, linked lists, stacks, queues, trees, and sorting algorithms."
+        ],
+        icon: "fa-briefcase"
+      }
+    ];
+
+    const certData = [
+      { name: "Economics of Health and Education & Health Systems Development", issuer: "Coursera", date: "2026", image: "Coursera Health system Dev.png" },
+      { name: "Web & Full Stack Development", issuer: "Infosys springBoard / Online Platforms", date: "2026", image: "Webdev infosys.jpeg" },
+      { name: "Mobile  Platform , IoT and OT Hacking", issuer: "Cybrary", date: "2024", image: "Mobile platform.jpeg" },
+      { name: "Data Engineering ", issuer: "Exclear", date: "2026", image: "data science.png" },
+      { name: "Journey of Self-Discovery — Spiritual Development Program", issuer: "ISKCON", date: "2026", image: "ISKCON.jpeg" },
+      { name: "Health Systems Development : Health Systems , policy and Research", issuer: "Coursera", date: "Nov 2026", image: "Coursera.png" },
+      { name: " Nasa Mukt Bharat Abhiyan", issuer: "Odisha Red Cross", date: "Oct 2024", image: "Nasa mukt Bharat YRC KIIT .jpeg" },
+      { name: "Graphic Designer ", issuer: "Tableau", date: "2020", image: "graphic designer.png" },
+      { name: "Python Libraries for Data Science", issuer: "Python Lib", date: "2025", image: "data science.png" }
+    ];
+
+    const educationData = [
+      {
+        school: "KIIT Deemed University (KIIT DU)",
+        degree: "B.Tech in Computer Science & Engineering (4th Year) — Specialization: Web Development, AI & Data Science",
+        date: "2026 – Present",
+        icon: "fa-university"
+      },
+      {
+        school: "Kathmandu Institute of Science & Technology (KIST), Nepal",
+        degree: "Higher Secondary Education (Class 12)",
+        scores: "Percentage: 75%",
+        date: "2023",
+        icon: "fa-school"
+      },
+      {
+        school: "Gajendra Narayan Singh Secondary School",
+        degree: "Secondary Education (Class 10)",
+        scores: "Percentage: 96.25%",
+        date: "2021",
+        icon: "fa-school"
+      }
+    ];
+
+    // --- Subcomponents ---
+    const highlightPalette = ['#fb923c', '#fbbf24', '#38bdf8', '#8b5cf6', '#34d399', '#f472b6', '#f87171', '#22d3ee', '#a78bfa'];
+
+    const PremiumText = ({ children, color = '#ffd166', glow = 'rgba(255, 209, 102, 0.35)' }) => (
+      <span className="premium-word" style={{ '--hover-color': color, '--hover-glow': glow }}>
+        {children}
+      </span>
+    );
+
+    const SectionHeading = ({ children, subtitle, color = '#ffb347', glow = 'rgba(255, 179, 71, 0.35)' }) => (
+      <div className="text-center mb-16 relative z-20 px-4 sm:px-6 lg:px-0">
+        <h2 className="text-3xl lg:text-5xl font-bold text-textLight mb-4 tracking-tight">
+          <PremiumText color={color} glow={glow}>{children}</PremiumText>
+          <span className="text-primary">.</span>
+        </h2>
+        {subtitle && <p className="text-textMuted max-w-2xl mx-auto text-lg">{subtitle}</p>}
+      </div>
+    );
+
+    const PageWrapper = ({ children }) => (
+      <motion.div
+        initial={{ opacity: 0, y: 30 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, y: -30 }}
+        transition={{ duration: 0.5, ease: "easeOut" }}
+        className="w-full"
+      >
+        {children}
+      </motion.div>
+    );
+
+    const Typewriter = ({ words }) => {
+      const [text, setText] = useState('');
+      const [wordIndex, setWordIndex] = useState(0);
+      const [isDeleting, setIsDeleting] = useState(false);
+
+      const currentWord = words[wordIndex] || words[0];
+      const currentColor = currentWord.color || '#ffffff';
+
+      useEffect(() => {
+        const word = currentWord.text;
+        let typingDelay = isDeleting ? 40 : 120;
+
+        if (!isDeleting && text === word) {
+          typingDelay = 2000;
+          const waitTimeout = setTimeout(() => setIsDeleting(true), typingDelay);
+          return () => clearTimeout(waitTimeout);
+        } else if (isDeleting && text === '') {
+          setIsDeleting(false);
+          setWordIndex((prev) => (prev + 1) % words.length);
+          typingDelay = 400;
+        }
+
+        const timeout = setTimeout(() => {
+          setText(prev => isDeleting ? prev.slice(0, -1) : word.slice(0, prev.length + 1));
+        }, typingDelay);
+
+        return () => clearTimeout(timeout);
+      }, [text, isDeleting, wordIndex, currentWord, words]);
+
+      return (
+        <span className="inline-flex items-center">
+          <span style={{ color: currentColor, textShadow: `0 0 20px ${currentColor}55` }}>
+            {text}
+          </span>
+          <span className="ml-[2px] animate-pulse border-r-[3px] border-primary h-[80%] inline-block align-middle pb-1"></span>
+        </span>
+      );
+    };
+
+    // --- Page Components ---
+
+    const Navbar = ({ currentHash }) => {
+      const [isOpen, setIsOpen] = useState(false);
+      const [scrolled, setScrolled] = useState(false);
+      const links = ['Home', 'About', 'Skills', 'Projects', 'Training', 'Education', 'Certificates', 'Contact'];
+
+      useEffect(() => {
+        const handleScroll = () => setScrolled(window.scrollY > 20);
+        window.addEventListener('scroll', handleScroll);
+        return () => window.removeEventListener('scroll', handleScroll);
+      }, []);
+
+      return (
+        <motion.nav
+          initial={{ y: -100 }} animate={{ y: 0 }} transition={{ duration: 0.6, ease: "easeOut" }}
+          className={`fixed w-full z-50 top-0 transition-all duration-500 border-b-[3px] border-primary/40 shadow-[0_15px_40px_-10px_rgba(59,130,246,0.3)] ${scrolled ? 'nav-animated' : ''}`}
+        >
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className={`flex justify-between items-center transition-all duration-500 ${scrolled ? 'h-16' : 'h-24'}`} style={{ width: '100%' }}>
+              <div className="flex items-center gap-0">
+                <a
+                  href="#home"
+                  className="flex items-center flex-shrink-0 cursor-pointer text-2xl md:text-3xl font-bold tracking-tight text-white"
+                >
+                  <span className="text-secondary font-mono mr-0">&lt;</span>
+                  GS
+                  <span className="text-secondary font-mono ml-1">&gt;</span>
+                </a>
+                <div className="flex flex-col items-center gap-0 text-center px-2">
+                  <span className="text-[10px] text-textMuted leading-tight">Refresh your mind here</span>
+                  <button id="audio-toggle-btn" className="audio-toggle-button" type="button" aria-label="Play or pause background music">
+                    <i className="fas fa-volume-high"></i>
+                  </button>
+                </div>
+              </div>
+
+              <div className="hidden md:flex space-x-2 items-center bg-white/5 px-2 py-1.5 rounded-full border border-white/5 backdrop-blur-md shadow-inner">
+                {links.map((item) => {
+                  const hash = `#${item.toLowerCase()}`;
+                  const isActive = currentHash === hash;
+                  return (
+                    <a key={item} href={hash} className={`relative px-4 py-2 text-[13px] font-bold tracking-wide rounded-full z-10 ${isActive ? 'text-white bg-primary/20 border border-primary/30' : 'text-textMuted'}`}>
+                      {item}
+                    </a>
+                  );
+                })}
+              </div>
+
+              <div className="md:hidden flex items-center bg-white/5 px-3 py-2 rounded-xl cursor-pointer hover:bg-white/10 border border-white/10 transition-colors" onClick={() => setIsOpen(!isOpen)}>
+                <i className={`fas ${isOpen ? 'fa-times' : 'fa-bars'} text-white text-lg`}></i>
+              </div>
+            </div>
+          </div>
+
+          <AnimatePresence>
+            {isOpen && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }}
+                className="md:hidden nav-animated border-b border-primary/30 overflow-hidden shadow-2xl"
+              >
+                <div className="px-4 py-6 space-y-2">
+                  {links.map((item) => {
+                    const hash = `#${item.toLowerCase()}`;
+                    const isActive = currentHash === hash;
+                    return (
+                      <a key={item} href={hash} onClick={() => setIsOpen(false)} className={`block px-5 py-3.5 rounded-2xl text-base font-bold transition-all ${isActive ? 'text-primary bg-primary/10 shadow-[inset_0_0_10px_rgba(59,130,246,0.15)] border border-primary/20' : 'text-textMuted hover:bg-white/5 hover:text-white hover:pl-7 border border-transparent'}`}>
+                        {item}
+                      </a>
+                    )
+                  })}
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </motion.nav>
+      );
+    };
+
+    const Hero = () => {
+      return (
+        <PageWrapper>
+          <section className="min-h-[90vh] flex items-center justify-center relative px-4 pt-24 pb-12">
+            <div className="absolute top-1/2 left-1/4 -translate-y-1/2 w-[300px] md:w-[500px] h-[300px] md:h-[500px] bg-primary/20 rounded-full blur-[100px] animate-pulse -z-10 pointer-events-none"></div>
+
+            <div className="max-w-7xl mx-auto w-full flex flex-col lg:flex-row items-center gap-12 z-10">
+              <motion.div
+                animate={{ y: [0, -15, 0] }} transition={{ repeat: Infinity, duration: 6, ease: "easeInOut" }}
+                className="text-center lg:text-left lg:w-1/2 flex flex-col items-center lg:items-start"
+              >
+                <motion.p
+                  initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}
+                  className="text-textMuted font-semibold tracking-[0.25em] mb-4 text-xs md:text-sm uppercase"
+                >
+                  <PremiumText color="#fbbf24" glow="rgba(251, 191, 36, 0.35)">HELLO, WORLD IT'S ME</PremiumText>
+                </motion.p>
+                <div className="flex items-center gap-4 justify-center lg:justify-start mb-6">
+                  <motion.h1
+                    initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.2, duration: 0.7 }}
+                    style={{
+                      display: 'block',
+                      whiteSpace: 'nowrap',
+                      fontFamily: 'Orbitron, sans-serif',
+                      fontSize: 'clamp(2.2rem, 4.4vw, 3.6rem)',
+                      fontWeight: 900,
+                      lineHeight: 0.95,
+                      letterSpacing: '0.08em',
+                      textTransform: 'uppercase',
+                      background: 'linear-gradient(180deg, #fff4d0 0%, #ffd06b 20%, #ff9d00 45%, #ff6a00 70%, #ffb347 100%)',
+                      WebkitBackgroundClip: 'text',
+                      WebkitTextFillColor: 'transparent',
+                      backgroundClip: 'text',
+                      color: 'transparent',
+                      textShadow: '0 0 6px rgba(255,120,0,0.25)'
+                    }}
+                  >
+                    GULSHAN SINGH
+                  </motion.h1>
+                </div>
+                <motion.h2
+                  initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}
+                  className="text-2xl md:text-3xl font-medium mb-6 text-textLight min-h-[40px]"
+                >
+                  <Typewriter words={[
+                    { text: "Full Stack Developer", color: "#38bdf8" },
+                    { text: "AI Enthusiast", color: "#a78bfa" },
+                    { text: "Graphic Designer", color: "#fb923c" },
+                    { text: "Problem Solver", color: "#34d399" }
+                  ]} />
+                </motion.h2>
+                <motion.p
+                  initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }}
+                  className="text-textMuted text-lg md:text-xl mb-10 max-w-xl leading-relaxed mx-auto lg:mx-0"
+                >
+                  <PremiumText color="#fb923c" glow="rgba(251, 146, 60, 0.35)">Motivated</PremiumText> <PremiumText color="#fbbf24" glow="rgba(251, 191, 36, 0.35)">4th-year</PremiumText> <PremiumText color="#38bdf8" glow="rgba(56, 189, 248, 0.35)">CSE student</PremiumText> at <PremiumText color="#8b5cf6" glow="rgba(139, 92, 246, 0.35)">KIIT DU</PremiumText>, passionate about building fast, scalable, and user-friendly digital solutions — from full-stack web apps to AI-powered systems.
+                </motion.p>
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }}
+                  className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto justify-center lg:justify-start"
+                >
+                  <a href="#projects" className="btn-primary text-white px-8 py-4 rounded-full font-bold focus:outline-none flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(59,130,246,0.3)] hover:shadow-[0_0_40px_rgba(6,182,212,0.6)]">
+                    <PremiumText color="#fff7d6" glow="rgba(255, 247, 214, 0.35)">View My Work</PremiumText>
+                  </a>
+                  <a href="#contact" className="btn-secondary text-primary px-8 py-4 rounded-full font-bold focus:outline-none flex items-center justify-center gap-2 border border-primary/30 hover:bg-primary/10 transition-colors">
+                    <PremiumText color="#ffb347" glow="rgba(255, 179, 71, 0.35)">Get In Touch</PremiumText>
+                  </a>
+                </motion.div>
+
+                <motion.div
+                  initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.8 }}
+                  className="mt-12 flex gap-8 justify-center lg:justify-start"
+                >
+                  <a href="https://github.com/infinit-alt" target="_blank" className="text-textMuted hover:text-white hover:scale-110 transition-all text-2xl"><i className="fab fa-github"></i></a>
+                  <a href="https://www.linkedin.com/in/gulshan-singh-8a1522322" target="_blank" className="text-textMuted hover:text-[#0a66c2] hover:scale-110 transition-all text-2xl"><i className="fab fa-linkedin"></i></a>
+                  <a href="https://www.facebook.com/profile.php?id=100011711962279" target="_blank" className="text-textMuted hover:text-[#1877f2] hover:scale-110 transition-all text-2xl"><i className="fab fa-facebook"></i></a>
+                  <a href="https://www.instagram.com/gulshansingh02?igsh=MTF3OHAyZnBtd3h5ag==" target="_blank" className="text-textMuted hover:text-[#e1306c] hover:scale-110 transition-all text-2xl"><i className="fab fa-instagram"></i></a>
+                  <a href="mailto:csegulshansingh@gmail.com" className="text-textMuted hover:text-primary hover:scale-110 transition-all text-2xl"><i className="fas fa-envelope"></i></a>
+                </motion.div>
+              </motion.div>
+
+              <motion.div
+                initial={{ opacity: 0, x: 50 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.6, duration: 0.8 }}
+                className="lg:w-1/2 relative h-[450px] md:h-[550px] w-full mt-12 lg:mt-0 flex items-center justify-center"
+              >
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[250px] h-[250px] bg-secondary/30 rounded-full blur-[80px] -z-10"></div>
+
+                <motion.div
+                  animate={{ y: [0, -10, 0] }} transition={{ repeat: Infinity, duration: 5, ease: "easeInOut", delay: 1 }}
+                  className="absolute z-20 w-[60%] md:w-[70%] right-[10%] top-[5%] rounded-3xl overflow-hidden shadow-[0_20px_50px_rgba(0,0,0,0.5)] border-2 border-slate-700/50"
+                >
+                  <div className="absolute inset-0 bg-gradient-to-tr from-primary/30 to-transparent mix-blend-overlay z-10 pointer-events-none"></div>
+                  <img src="font image.png" alt="Portfolio preview" className="w-full h-full object-cover" />
+                </motion.div>
+
+                <motion.div
+                  animate={{ y: [0, 15, 0] }} transition={{ repeat: Infinity, duration: 7, ease: "easeInOut", delay: 0.5 }}
+                  className="absolute z-10 w-[55%] md:w-[45%] left-[5%] bottom-[15%] rounded-2xl overflow-hidden shadow-[0_20px_50px_rgba(0,0,0,0.5)] border-2 border-slate-700/50"
+                >
+                  <div className="absolute inset-0 bg-gradient-to-tr from-secondary/30 to-transparent mix-blend-overlay z-10 pointer-events-none"></div>
+                  <img src="font image 2.png" alt="Portfolio preview" className="w-full h-full object-cover" />
+                </motion.div>
+
+                <motion.div
+                  animate={{ rotate: [0, 10, 0], scale: [1, 1.05, 1] }}
+                  transition={{ repeat: Infinity, duration: 4, ease: "easeInOut" }}
+                  className="absolute z-30 top-[5%] left-[15%] bg-surface/80 backdrop-blur-md p-4 rounded-xl border border-white/10 shadow-[0_10px_30px_rgba(0,0,0,0.3)]"
+                >
+                  <i className="fas fa-brain text-accent text-3xl"></i>
+                </motion.div>
+
+                <motion.div
+                  animate={{ rotate: [0, -10, 0], scale: [1, 1.1, 1] }}
+                  transition={{ repeat: Infinity, duration: 5, ease: "easeInOut", delay: 2 }}
+                  className="absolute z-30 bottom-[10%] right-[20%] bg-surface/90 backdrop-blur-md p-4 rounded-xl border border-white/10 shadow-[0_10px_30px_rgba(0,0,0,0.3)]"
+                >
+                  <i className="fas fa-network-wired text-primary text-3xl"></i>
+                </motion.div>
+              </motion.div>
+            </div>
+          </section>
+        </PageWrapper>
+      );
+    };
+
+    const About = () => {
+      const containerVariants = {
+        hidden: { opacity: 0 },
+        show: { opacity: 1, transition: { staggerChildren: 0.25, delayChildren: 0.2 } }
+      };
+
+      const itemVariants = {
+        hidden: { opacity: 0, x: -20 },
+        show: { opacity: 1, x: 0, transition: { duration: 0.6, type: "spring", stiffness: 80 } }
+      };
+
+      return (
+        <PageWrapper>
+          <section id="about" className="py-24 px-4 relative min-h-[calc(100vh-5rem)] flex flex-col justify-center">
+            <div className="absolute top-[10%] left-[0%] w-[300px] md:w-[600px] h-[300px] md:h-[600px] bg-accent/10 rounded-full blur-[120px] -z-10 pointer-events-none animate-pulse"></div>
+            <div className="absolute bottom-[0%] right-[5%] w-[300px] md:w-[500px] h-[300px] md:h-[500px] bg-primary/10 rounded-full blur-[100px] -z-10 pointer-events-none"></div>
+
+            <div className="max-w-6xl mx-auto z-10 relative w-full text-center">
+              <div className="flex flex-col lg:flex-row gap-16 items-center lg:items-start mt-12 w-full relative">
+
+                <div className="lg:w-4/12 flex flex-col justify-start items-start relative w-full mx-auto">
+                  <SectionHeading subtitle="Who I am and what drives my passion for technology." color="#fb923c" glow="rgba(251, 146, 60, 0.35)">About Me</SectionHeading>
+
+                  <motion.div
+                    initial={{ scale: 0.8, opacity: 0, x: -50 }}
+                    animate={{ scale: 1, opacity: 1, x: 0 }}
+                    transition={{ duration: 0.8, type: "spring", stiffness: 100 }}
+                    className="flex justify-center relative group lg:pt-3 w-full mx-auto"
+                  >
+                    <div className="absolute inset-0 bg-gradient-to-tr from-primary via-secondary to-accent opacity-50 blur-[60px] group-hover:opacity-80 transition-opacity duration-700 animate-pulse rounded-[2rem] scale-105"></div>
+
+                  <motion.div
+                    animate={{ y: [0, -10, 0] }}
+                    transition={{ repeat: Infinity, duration: 6, ease: "easeInOut" }}
+                    className="relative w-full max-w-[320px] mx-auto aspect-[3/4]"
+                  >
+                    <div className="absolute -inset-1 bg-gradient-to-tr from-primary via-secondary to-accent opacity-80 blur-lg rounded-[2rem] group-hover:opacity-100 group-hover:blur-2xl transition-all duration-500 z-0"></div>
+
+                    <motion.img
+                      whileHover={{ scale: 1.03 }}
+                      transition={{ type: "spring", stiffness: 300 }}
+                      src="myphoto.jpeg"
+                      alt="Gulshan Singh"
+                      className="w-full h-full object-cover rounded-[2rem] border-2 border-white/20 shadow-[0_0_60px_rgba(6,182,212,0.6)] relative z-10 grayscale-[0.2] group-hover:grayscale-0 transition-all duration-500"
+                    />
+
+                    <motion.div
+                      animate={{ rotate: [0, 5, 0] }}
+                      transition={{ repeat: Infinity, duration: 4, ease: "easeInOut" }}
+                      className="absolute -bottom-6 -right-6 z-20 bg-surface/90 backdrop-blur-xl p-4 rounded-2xl border border-white/10 shadow-[0_10px_30px_rgba(0,0,0,0.5)] flex items-center gap-3"
+                    >
+                      <div className="bg-primary/20 p-2 rounded-full text-primary">
+                        <i className="fas fa-code text-xl"></i>
+                      </div>
+                      <div>
+                        <p className="text-white font-bold text-base leading-tight">Full Stack</p>
+                        <p className="text-textMuted text-xs">& ML</p>
+                      </div>
+                    </motion.div>
+                  </motion.div>
+                  </motion.div>
+                </div>
+
+                <motion.div
+                  variants={containerVariants}
+                  initial="hidden"
+                  animate="show"
+                  className="lg:w-7/12 flex flex-col justify-center premium-text-block"
+                >
+                  <h3 className="text-3xl md:text-5xl font-extrabold text-white tracking-tight mb-6 leading-tight relative z-10">
+                    Building <span className="text-orange-400">Scalable</span> Solutions with Code.
+                  </h3>
+
+                  <div className="space-y-6 text-[#9ca3af] text-[1.1rem] md:text-[1.2rem] leading-relaxed relative z-10">
+                    <motion.p variants={itemVariants}>
+                      I am <strong className="text-white text-[1.25rem]"><PremiumText color="#f97316" glow="rgba(249, 115, 22, 0.35)">Gulshan Kumar Singh</PremiumText></strong>, a <PremiumText color="#38bdf8" glow="rgba(56, 189, 248, 0.35)">4th-year</PremiumText> <PremiumText color="#8b5cf6" glow="rgba(139, 92, 246, 0.35)">Computer Science & Engineering</PremiumText> student at <strong className="text-white"><PremiumText color="#22d3ee" glow="rgba(34, 211, 238, 0.35)">KIIT Deemed University, Bhubaneswar</PremiumText></strong>, driven by a deep passion for <strong className="text-[#06B6D4] font-semibold"><PremiumText color="#34d399" glow="rgba(52, 211, 153, 0.35)">Full Stack Development and Artificial Intelligence</PremiumText></strong>.
+                    </motion.p>
+
+                    <motion.p variants={itemVariants}>
+                      My journey spans <strong className="text-[#06B6D4] font-semibold"><PremiumText color="#f472b6" glow="rgba(244, 114, 182, 0.35)">Python, Java, JavaScript, and C</PremiumText></strong>, along with hands-on experience in building web applications and applying <strong className="text-[#C084FC] font-semibold"><PremiumText color="#a78bfa" glow="rgba(167, 139, 250, 0.35)">Machine Learning and NLP pipelines</PremiumText></strong> to solve real-world problems.
+                    </motion.p>
+
+                    <motion.p variants={itemVariants}>
+                      Beyond code, I actively contribute as a <strong className="text-[#C084FC] font-semibold"><PremiumText color="#f87171" glow="rgba(248, 113, 113, 0.35)">Graphics Designer with NSS & ISKCON</PremiumText></strong> and have led community engagement initiatives — demonstrating strong leadership and communication skills. My singular goal: <span className="text-white font-medium bg-white/5 border border-white/10 px-3 py-1 rounded-lg"><PremiumText color="#ffd166" glow="rgba(255, 209, 102, 0.35)">turning ideas into fast, scalable, and user-friendly digital solutions.</PremiumText></span>
+                    </motion.p>
+                  </div>
+
+                  <motion.div variants={itemVariants} className="flex flex-wrap gap-6 items-center mt-10 relative z-10">
+                    <a href="#contact" className="relative overflow-hidden bg-gradient-to-tr from-primary via-accent to-secondary text-white px-8 py-4 rounded-full font-bold transition-all duration-500 hover:shadow-[0_0_40px_rgba(139,92,246,0.8)] flex items-center gap-3 group hover:scale-110 shadow-[0_0_20px_rgba(6,182,212,0.4)] border border-white/20">
+                      <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-500 ease-in-out"></div>
+                      <span className="relative z-10 flex items-center gap-3 tracking-wide text-[15px]"><PremiumText color="#fff4d0" glow="rgba(255, 244, 208, 0.35)">Contact Me</PremiumText> <i className="fas fa-paper-plane group-hover:-translate-y-1 group-hover:translate-x-1 group-hover:rotate-12 transition-all duration-300"></i></span>
+                    </a>
+                    <a href="#education" className="text-[#9ca3af] hover:text-white transition-colors font-semibold flex items-center gap-3 px-6 py-4 rounded-full hover:bg-white/5 border border-transparent hover:border-white/10 group">
+                      <PremiumText color="#38bdf8" glow="rgba(56, 189, 248, 0.35)">View Education</PremiumText> <i className="fas fa-user-graduate text-accent group-hover:scale-110 group-hover:-rotate-12 transition-transform duration-300"></i>
+                    </a>
+                  </motion.div>
+                </motion.div>
+
+              </div>
+            </div>
+          </section>
+        </PageWrapper>
+      );
+    };
+
+    const Skills = () => {
+      const [hoveredSkill, setHoveredSkill] = useState(null);
+
+      return (
+        <PageWrapper>
+          <section className="py-24 px-4 relative min-h-[100vh] flex flex-col justify-center overflow-hidden">
+            <div className="absolute top-[10%] right-[5%] w-[500px] h-[500px] bg-accent/20 rounded-full blur-[150px] -z-10 pointer-events-none animate-pulse"></div>
+            <div className="absolute bottom-[0%] left-[5%] w-[600px] h-[600px] bg-primary/10 rounded-full blur-[150px] -z-10 pointer-events-none" style={{ animation: "pulse 8s infinite alternate-reverse" }}></div>
+
+            <div className="max-w-6xl mx-auto z-10 relative w-full">
+              <SectionHeading subtitle="My technical toolkit for building scalable web and AI solutions." color="#38bdf8" glow="rgba(56, 189, 248, 0.35)">My Skills</SectionHeading>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 lg:gap-10 mt-20">
+                {skillsData.map((skill, idx) => (
+                  <motion.div
+                    key={idx}
+                    initial={{ opacity: 0, scale: 0.9, y: 50 }}
+                    whileInView={{ opacity: 1, scale: 1, y: 0 }}
+                    viewport={{ once: true, margin: "-50px" }}
+                    transition={{ delay: idx * 0.15, duration: 0.7, type: "spring", bounce: 0.4 }}
+                    whileHover={{ y: -10 }}
+                    className="relative bg-gradient-to-b from-[#1E293B]/90 to-[#0F172A]/90 backdrop-blur-2xl border border-white/5 p-8 rounded-3xl shadow-[0_20px_40px_-5px_rgba(0,0,0,0.5)] flex flex-col transition-all duration-500 group overflow-hidden"
+                  >
+                    <div className="absolute top-0 inset-x-0 h-[1px] bg-gradient-to-r from-transparent via-primary/50 to-transparent"></div>
+                    <div className="absolute -inset-0.5 bg-gradient-to-b from-primary/20 to-accent/20 rounded-[2rem] blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-700 -z-10"></div>
+
+                    <div className="flex flex-col items-center justify-center gap-3 mb-10 text-center relative z-10">
+                      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-24 h-24 bg-primary/20 rounded-full blur-[30px] pointer-events-none group-hover:bg-accent/40 transition-colors duration-500"></div>
+                      <i className={`fas ${skill.icon} text-5xl text-white drop-shadow-[0_0_15px_rgba(255,255,255,0.8)] relative z-10 group-hover:scale-110 group-hover:-rotate-6 transition-transform duration-500`}></i>
+                      <h3 className="text-3xl font-extrabold text-white tracking-tight relative z-10 mt-3 group-hover:text-primary transition-colors duration-300">{skill.category}</h3>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4 mt-auto relative z-10">
+                      {skill.items.map(acc => (
+                        <div
+                          key={acc.name}
+                          onMouseEnter={() => setHoveredSkill(acc.name)}
+                          onMouseLeave={() => setHoveredSkill(null)}
+                          className="group/item relative bg-[#0F172A] flex flex-col items-center justify-start pt-6 pb-5 px-2 rounded-[18px] border transition-all duration-400 cursor-pointer overflow-hidden z-10 h-full min-h-[120px]"
+                          style={{
+                            boxShadow: hoveredSkill === acc.name ? `0 15px 35px -10px ${acc.color}` : '0 10px 20px -5px rgba(0,0,0,0.5)',
+                            borderColor: hoveredSkill === acc.name ? acc.color : 'rgba(51, 65, 85, 0.4)',
+                            transform: hoveredSkill === acc.name ? 'translateY(-6px)' : 'none'
+                          }}
+                        >
+                          {hoveredSkill === acc.name && (
+                            <div className="absolute inset-0 bg-gradient-to-t from-white/5 to-transparent pointer-events-none" style={{ backgroundColor: acc.color, opacity: 0.15 }}></div>
+                          )}
+                          <div className="absolute top-5 w-14 h-14 rounded-full blur-[20px] opacity-0 group-hover/item:opacity-80 transition-opacity duration-500 pointer-events-none" style={{ backgroundColor: acc.color }}></div>
+                          <i
+                            className={`${acc.logo} transition-all duration-300 group-hover/item:scale-125 relative z-10`}
+                            style={{ filter: hoveredSkill === acc.name ? `drop-shadow(0 0 15px ${acc.color})` : 'drop-shadow(0 4px 8px rgba(0,0,0,0.5))' }}
+                          ></i>
+                          <span className="mt-auto pt-4 text-[#9ca3af] group-hover/item:text-white text-[12px] font-bold uppercase tracking-widest text-center transition-colors relative z-10">{acc.name}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </motion.div>
+                ))}
+              </div>
+            </div>
+          </section>
+        </PageWrapper>
+      );
+    };
+
+    const Projects = () => {
+      return (
+        <PageWrapper>
+          <section className="py-24 px-4 relative min-h-[100vh] flex flex-col justify-center overflow-hidden">
+            <div className="absolute top-[20%] left-[-5%] w-[600px] h-[600px] bg-accent/10 rounded-full blur-[180px] -z-10 pointer-events-none animate-pulse"></div>
+            <div className="absolute bottom-[10%] right-[-5%] w-[500px] h-[500px] bg-primary/20 rounded-full blur-[150px] -z-10 pointer-events-none"></div>
+
+            <div className="max-w-7xl mx-auto z-10 relative">
+              <SectionHeading subtitle="Projects highlighting my expertise in ML, full-stack development, and community impact." color="#8b5cf6" glow="rgba(139, 92, 246, 0.35)">Featured Projects</SectionHeading>
+
+              <div className="space-y-16 mt-20">
+                {projectsData.map((project, idx) => (
+                  <motion.div
+                    key={idx}
+                    initial={{ opacity: 0, y: 50, scale: 0.95 }}
+                    whileInView={{ opacity: 1, y: 0, scale: 1 }}
+                    viewport={{ once: true, margin: "-100px" }}
+                    transition={{ duration: 0.7, type: "spring", bounce: 0.3 }}
+                    className="relative bg-gradient-to-br from-[#1E293B]/90 to-[#0F172A]/90 backdrop-blur-2xl rounded-[2.5rem] overflow-hidden flex flex-col lg:flex-row group border border-white/10 hover:border-primary/30 transition-all duration-500 hover:shadow-[0_20px_50px_-10px_rgba(6,182,212,0.25)]"
+                  >
+                    <div className="absolute top-0 inset-x-0 h-[1px] bg-gradient-to-r from-transparent via-accent/50 to-transparent"></div>
+
+                    <div className="p-10 lg:p-14 lg:w-2/3 flex flex-col justify-center relative z-10">
+                      <div className="flex flex-wrap items-center gap-4 mb-8">
+                        <div className="h-14 w-14 rounded-full bg-gradient-to-tr from-accent/20 to-primary/20 flex items-center justify-center border border-white/10 shadow-[0_0_15px_rgba(139,92,246,0.3)]">
+                          <i className={`fas ${project.icon} text-2xl text-accent`}></i>
+                        </div>
+                        <span className="text-[13px] font-bold tracking-widest text-[#9ca3af] uppercase bg-black/40 px-5 py-2 rounded-full border border-white/5 backdrop-blur-md shadow-inner">
+                          <i className="far fa-calendar-alt mr-2 text-primary"></i>
+                          <PremiumText color="#fbbf24" glow="rgba(251, 191, 36, 0.35)">{project.date}</PremiumText>
+                        </span>
+                      </div>
+
+                      <h3 className="text-3xl md:text-4xl font-extrabold mb-6 text-white group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-white group-hover:to-primary transition-all duration-300 tracking-tight">
+                        <PremiumText color="#ff9f43" glow="rgba(255, 159, 67, 0.35)">{project.title}</PremiumText>
+                      </h3>
+
+                      <ul className="space-y-4 mb-10 text-[#9ca3af] text-[1.05rem] leading-relaxed">
+                        {project.points.map((pt, i) => (
+                          <li key={i} className="flex gap-4 items-start">
+                            <i className="fas fa-check-circle text-primary mt-1.5 text-lg flex-shrink-0 drop-shadow-[0_0_5px_rgba(6,182,212,0.5)]"></i>
+                            <span><PremiumText color={['#38bdf8', '#8b5cf6', '#34d399', '#f472b6', '#f87171'][i % 5]} glow="rgba(255,255,255,0.08)">{pt}</PremiumText></span>
+                          </li>
+                        ))}
+                      </ul>
+
+                      <div className="mt-auto pt-4 border-t border-white/5">
+                        <div className="flex flex-wrap gap-3 mb-10">
+                          {project.tech.map(t => (
+                            <span key={t} className="text-[12px] font-bold text-primary bg-primary/10 border border-primary/30 px-4 py-[6px] rounded-full drop-shadow-[0_0_8px_rgba(6,182,212,0.3)]">
+                              {t}
+                            </span>
+                          ))}
+                        </div>
+                        <a href={project.link} target="_blank" className="group/btn relative inline-flex overflow-hidden rounded-full p-[2px] font-bold text-white transition-all hover:scale-105 duration-300 shadow-[0_0_15px_rgba(6,182,212,0.3)] hover:shadow-[0_0_30px_rgba(139,92,246,0.6)]">
+                          <span className="absolute inset-0 bg-gradient-to-r from-primary via-accent to-secondary animate-pulse"></span>
+                          <span className="inline-flex items-center justify-center gap-3 w-full rounded-full bg-slate-950 px-8 py-4 text-sm tracking-widest uppercase backdrop-blur-3xl group-hover/btn:bg-slate-900/50 transition-colors">
+                            View Source <i className="fas fa-arrow-right group-hover/btn:translate-x-2 transition-transform duration-300"></i>
+                          </span>
+                        </a>
+                      </div>
+                    </div>
+
+                    <div className="lg:w-1/3 bg-[#0F172A] flex items-center justify-center p-0 min-h-[300px] lg:min-h-full relative overflow-hidden border-t lg:border-t-0 lg:border-l border-white/5">
+                      <div className="absolute inset-0 bg-gradient-to-tr from-primary/20 to-accent/20 opacity-40 group-hover:opacity-80 transition-opacity duration-700 z-0 mix-blend-overlay pointer-events-none"></div>
+                      {project.image ? (
+                        <div className="relative w-full h-full p-8 lg:p-12 flex items-center justify-center z-10 pointer-events-none">
+                          <div className="absolute inset-0 bg-gradient-to-t from-[#0F172A] via-transparent to-transparent opacity-60 z-20"></div>
+                          <img src={project.image} alt={project.title} className="w-full h-full object-cover object-center rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.8)] border-4 border-slate-800/80 group-hover:scale-110 group-hover:rotate-1 group-hover:shadow-[0_0_40px_rgba(6,182,212,0.4)] transition-all duration-700 relative z-10" />
+                        </div>
+                      ) : (
+                        <i className={`fas ${project.icon} text-[150px] text-slate-800/80 group-hover:scale-125 group-hover:-rotate-6 group-hover:text-slate-700 transition-all duration-700 z-10`}></i>
+                      )}
+                    </div>
+                  </motion.div>
+                ))}
+              </div>
+            </div>
+          </section>
+        </PageWrapper>
+      );
+    };
+
+    const Education = () => {
+      return (
+        <PageWrapper>
+          <section className="py-24 px-4 relative min-h-[85vh] flex justify-center items-center overflow-hidden">
+            <div className="absolute top-[10%] left-[5%] w-[500px] h-[500px] bg-primary/10 rounded-full blur-[150px] -z-10 pointer-events-none animate-pulse"></div>
+            <div className="absolute bottom-[10%] right-[5%] w-[400px] h-[400px] bg-secondary/10 rounded-full blur-[120px] -z-10 pointer-events-none"></div>
+
+            <div className="max-w-5xl mx-auto z-10 relative w-full">
+              <SectionHeading subtitle="The academic foundation driving my technical journey." color="#34d399" glow="rgba(52, 211, 153, 0.35)">Education Journey</SectionHeading>
+
+              <div className="mt-20 relative">
+                <div className="absolute left-6 md:left-12 top-0 bottom-0 w-[2px] bg-gradient-to-b from-primary via-secondary to-transparent"></div>
+
+                <div className="space-y-16 ml-6 md:ml-12 pl-10 md:pl-16 relative">
+                  {educationData.map((item, idx) => (
+                    <motion.div
+                      key={idx}
+                      initial={{ opacity: 0, x: -50, scale: 0.95 }}
+                      whileInView={{ opacity: 1, x: 0, scale: 1 }}
+                      viewport={{ once: true, margin: "-100px" }}
+                      transition={{ duration: 0.6, type: "spring", bounce: 0.4, delay: idx * 0.15 }}
+                      className="relative glass p-8 md:p-10 rounded-3xl group hover:shadow-[0_20px_40px_-5px_rgba(6,182,212,0.15)] transition-all duration-500 border border-slate-700/50 hover:border-primary/30"
+                    >
+                      <motion.div
+                        whileHover={{ scale: 1.2, rotate: 360 }}
+                        transition={{ duration: 0.6 }}
+                        className="absolute -left-[calc(2.5rem+16px)] md:-left-[calc(4rem+16px)] top-6 h-14 w-14 rounded-full bg-[#0F172A] border-4 border-primary/80 shadow-[0_0_20px_rgba(6,182,212,0.6)] flex items-center justify-center z-20 group-hover:border-white transition-colors duration-300"
+                      >
+                        <i className={`fas ${item.icon || 'fa-graduation-cap'} text-primary group-hover:text-white transition-colors duration-300 text-xl md:text-2xl`}></i>
+                      </motion.div>
+
+                      <div className="flex flex-col lg:flex-row lg:justify-between lg:items-start gap-4 mb-4 relative z-10">
+                        <div>
+                          <h4 className="text-2xl md:text-3xl font-bold tracking-tight text-white group-hover:text-primary transition-colors duration-300"><PremiumText color="#ffd166" glow="rgba(255, 209, 102, 0.35)">{item.school}</PremiumText></h4>
+                          <p className="text-secondary font-semibold text-lg md:text-xl mt-2"><PremiumText color="#38bdf8" glow="rgba(56, 189, 248, 0.35)">{item.degree}</PremiumText></p>
+                        </div>
+                        <span className="text-sm font-bold text-white bg-white/10 px-5 py-2 rounded-full border border-white/20 whitespace-nowrap self-start shadow-inner backdrop-blur-md flex items-center gap-2">
+                          <i className="far fa-calendar-alt text-primary"></i>
+                          <PremiumText color="#8b5cf6" glow="rgba(139, 92, 246, 0.35)">{item.date}</PremiumText>
+                        </span>
+                      </div>
+
+                      {item.scores && (
+                        <div className="mt-6 flex">
+                          <p className="text-white font-bold bg-gradient-to-r from-primary/20 to-transparent inline-flex items-center gap-3 px-5 py-3 rounded-xl border border-primary/30 shadow-[0_0_15px_rgba(6,182,212,0.1)] group-hover:shadow-[0_0_20px_rgba(6,182,212,0.3)] transition-all">
+                            <i className="fas fa-award text-accent text-xl"></i>
+                            <span className="text-accent"><PremiumText color="#34d399" glow="rgba(52, 211, 153, 0.35)">{item.scores}</PremiumText></span>
+                          </p>
+                        </div>
+                      )}
+
+                      <div className="absolute inset-0 bg-gradient-to-tr from-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-3xl pointer-events-none"></div>
+                    </motion.div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </section>
+        </PageWrapper>
+      );
+    };
+
+    const Training = () => {
+      const [previewImage, setPreviewImage] = useState(null);
+
+      return (
+        <PageWrapper>
+          <section className="py-12 px-4 relative min-h-[85vh]">
+            <div className="max-w-4xl mx-auto z-10 relative">
+              <SectionHeading subtitle="My professional training and hands-on industry experience." color="#0ea5e9" glow="rgba(14, 165, 233, 0.35)">Training & Experience</SectionHeading>
+              <div className="mt-12">
+                <div className="space-y-8 border-l border-slate-700 ml-4 pl-8 relative">
+                  {experienceData.map((item, idx) => (
+                    <motion.div
+                      key={idx}
+                      initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: idx * 0.1 }}
+                      className="relative glass p-8 rounded-2xl hover:border-primary/50 transition-colors"
+                    >
+                      <div className="absolute -left-[41px] top-8 h-4 w-4 rounded-full bg-primary shadow-[0_0_15px_rgba(59,130,246,0.8)]"></div>
+                      <div className="flex flex-col md:flex-row md:justify-between md:items-start gap-2 mb-2">
+                        <h4 className="text-2xl font-bold text-textLight"><PremiumText color="#fb923c" glow="rgba(251, 146, 60, 0.35)">{item.title}</PremiumText></h4>
+                        <span className="text-sm font-medium text-textMuted bg-surface px-3 py-1 rounded-full border border-slate-800 whitespace-nowrap self-start">
+                          <PremiumText color="#8b5cf6" glow="rgba(139, 92, 246, 0.35)">{item.date}</PremiumText>
+                        </span>
+                      </div>
+                      <p className="text-secondary font-medium text-lg mb-3"><PremiumText color="#38bdf8" glow="rgba(56, 189, 248, 0.35)">{item.subtitle}</PremiumText></p>
+
+                      {item.points && (
+                        <ul className="text-base text-textMuted space-y-2 mt-4">
+                          {item.points.map((pt, i) => (
+                            <li key={i} className="flex gap-3"><span className="text-accent">•</span> <PremiumText color={['#fbbf24', '#34d399', '#f472b6', '#f87171'][i % 4]} glow="rgba(255,255,255,0.08)">{pt}</PremiumText></li>
+                          ))}
+                        </ul>
+                      )}
+
+                      {item.image && (
+                        <div className="mt-8">
+                          <button onClick={() => setPreviewImage(item.image)} className="bg-surface/90 text-white px-6 py-3 rounded-full font-bold shadow-xl hover:scale-105 hover:bg-primary transition-all flex items-center gap-2 border border-slate-600">
+                            <i className="fas fa-search-plus"></i> View Certificate
+                          </button>
+                        </div>
+                      )}
+                    </motion.div>
+                  ))}
+
+                  {/* Extra Curricular */}
+                  <motion.div
+                    initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.2 }}
+                    className="relative glass p-8 rounded-2xl hover:border-accent/50 transition-colors"
+                  >
+                    <div className="absolute -left-[41px] top-8 h-4 w-4 rounded-full bg-accent shadow-[0_0_15px_rgba(139,92,246,0.8)]"></div>
+                    <div className="flex flex-col md:flex-row md:justify-between md:items-start gap-2 mb-2">
+                      <h4 className="text-2xl font-bold text-textLight"><PremiumText color="#ffb347" glow="rgba(255, 179, 71, 0.35)">Extra-Curricular Activities</PremiumText></h4>
+                    </div>
+                    <p className="text-accent font-medium text-lg mb-3"><PremiumText color="#22d3ee" glow="rgba(34, 211, 238, 0.35)">Community & Leadership Roles</PremiumText></p>
+                    <ul className="text-base text-textMuted space-y-2 mt-4">
+                      <li className="flex gap-3"><span className="text-primary">•</span> <PremiumText color="#fbbf24" glow="rgba(251, 191, 36, 0.35)">Volunteer — Youth Red Cross Society</PremiumText></li>
+                      <li className="flex gap-3"><span className="text-primary">•</span> <PremiumText color="#f472b6" glow="rgba(244, 114, 182, 0.35)">Graphics Designer — NSS & ISKCON</PremiumText></li>
+                      <li className="flex gap-3"><span className="text-primary">•</span> <PremiumText color="#34d399" glow="rgba(52, 211, 153, 0.35)">Organized spiritual awareness programs and community events</PremiumText></li>
+                      <li className="flex gap-3"><span className="text-primary">•</span> <PremiumText color="#f87171" glow="rgba(248, 113, 113, 0.35)">Community service & street animal feeding initiatives</PremiumText></li>
+                    </ul>
+                  </motion.div>
+                </div>
+              </div>
+            </div>
+
+            <AnimatePresence>
+              {previewImage && (
+                <motion.div
+                  initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                  className="fixed inset-0 z-[100] bg-black/95 backdrop-blur-md flex items-center justify-center p-4 md:p-10 cursor-zoom-out"
+                  onClick={() => setPreviewImage(null)}
+                >
+                  <button onClick={() => setPreviewImage(null)} className="absolute top-6 right-6 text-white/70 hover:text-white bg-white/10 hover:bg-white/20 rounded-full h-12 w-12 flex items-center justify-center transition-all border border-white/10 shadow-lg">
+                    <i className="fas fa-times text-xl"></i>
+                  </button>
+                  <motion.img
+                    initial={{ scale: 0.9, opacity: 0, y: 20 }} animate={{ scale: 1, opacity: 1, y: 0 }} exit={{ scale: 0.9, opacity: 0, y: 20 }}
+                    transition={{ type: "spring", stiffness: 300, damping: 25 }}
+                    src={previewImage} alt="Certificate Preview"
+                    className="max-w-full max-h-[90vh] object-contain rounded-xl shadow-2xl border border-white/10"
+                    onClick={(e) => e.stopPropagation()}
+                  />
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </section>
+        </PageWrapper>
+      );
+    };
+
+    const Certificates = () => {
+      const [previewImage, setPreviewImage] = useState(null);
+      const infiniteCerts = [...certData, ...certData, ...certData];
+
+      return (
+        <PageWrapper>
+          <section className="py-24 px-4 relative min-h-[85vh] flex flex-col justify-center overflow-hidden">
+            <div className="max-w-7xl mx-auto z-10 relative w-full mb-16">
+              <SectionHeading subtitle="Continuous learning is at the core of my growth." color="#f472b6" glow="rgba(244, 114, 182, 0.35)">Certifications</SectionHeading>
+            </div>
+
+            <div className="relative w-full overflow-hidden flex items-center py-4">
+              <div className="absolute left-0 top-0 bottom-0 w-16 md:w-64 bg-gradient-to-r from-[#0b0f19] to-transparent z-10 pointer-events-none"></div>
+              <div className="absolute right-0 top-0 bottom-0 w-16 md:w-64 bg-gradient-to-l from-[#0b0f19] to-transparent z-10 pointer-events-none"></div>
+
+              <motion.div
+                animate={{ x: ["0%", "-33.333333%"] }}
+                transition={{ repeat: Infinity, ease: "linear", duration: 35 }}
+                className="flex gap-8 md:gap-12 w-max px-4 group/slider"
+              >
+                {infiniteCerts.map((cert, idx) => (
+                  <div key={idx} className="w-[300px] md:w-[450px] flex-shrink-0 flex flex-col group/item transition-all duration-300 hover:-translate-y-2">
+                    <div className="w-full relative rounded-2xl overflow-hidden shadow-2xl aspect-[4/3] bg-surface/30 flex items-center justify-center mb-6">
+                      {cert.image ? (
+                        <img src={cert.image} alt={cert.name} className="w-full h-full object-cover grayscale-[0.3] group-hover/item:grayscale-0 group-hover/item:scale-110 transition-all duration-700 pointer-events-none" />
+                      ) : (
+                        <i className="fas fa-certificate text-6xl text-slate-700"></i>
+                      )}
+                      <div className="absolute inset-0 bg-primary/20 opacity-0 group-hover/item:opacity-100 transition-opacity duration-300 flex items-center justify-center backdrop-blur-[2px]">
+                        <button onClick={() => setPreviewImage(cert.image)} className="bg-surface/90 text-white px-6 py-3 rounded-full font-bold shadow-xl hover:scale-105 hover:bg-primary transition-all flex items-center gap-2 border border-slate-600">
+                          <i className="fas fa-expand"></i> Preview
+                        </button>
+                      </div>
+                    </div>
+                    <div className="w-full flex flex-col text-left px-2">
+                      <h3 className="text-xl md:text-2xl font-bold text-textLight mb-4 leading-snug line-clamp-2">{cert.name}</h3>
+                      <div className="flex flex-wrap items-center justify-start gap-4 mt-auto">
+                        <span className="text-primary font-semibold text-sm flex items-center gap-2">
+                          <i className="fas fa-building"></i> {cert.issuer}
+                        </span>
+                        <span className="text-textMuted font-medium text-sm flex items-center gap-2">
+                          <i className="far fa-calendar-alt"></i> {cert.date}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </motion.div>
+            </div>
+
+            <AnimatePresence>
+              {previewImage && (
+                <motion.div
+                  initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                  className="fixed inset-0 z-[100] bg-black/95 backdrop-blur-md flex items-center justify-center p-4 md:p-10 cursor-zoom-out"
+                  onClick={() => setPreviewImage(null)}
+                >
+                  <button onClick={() => setPreviewImage(null)} className="absolute top-6 right-6 text-white/70 hover:text-white bg-white/10 hover:bg-white/20 rounded-full h-12 w-12 flex items-center justify-center transition-all border border-white/10 shadow-lg">
+                    <i className="fas fa-times text-xl"></i>
+                  </button>
+                  <motion.img
+                    initial={{ scale: 0.9, opacity: 0, y: 20 }} animate={{ scale: 1, opacity: 1, y: 0 }} exit={{ scale: 0.9, opacity: 0, y: 20 }}
+                    transition={{ type: "spring", stiffness: 300, damping: 25 }}
+                    src={previewImage} alt="Certificate Preview"
+                    className="max-w-full max-h-[90vh] object-contain rounded-xl shadow-2xl border border-white/10"
+                    onClick={(e) => e.stopPropagation()}
+                  />
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </section>
+        </PageWrapper>
+      );
+    };
+
+    const Contact = () => {
+      const formRef = useRef();
+      const [loading, setLoading] = useState(false);
+      const [message, setMessage] = useState('');
+
+      const sendEmail = (e) => {
+        e.preventDefault();
+        setLoading(true);
+        emailjs.sendForm('YOUR_SERVICE_ID', 'YOUR_TEMPLATE_ID', formRef.current, 'YOUR_PUBLIC_KEY')
+          .then(() => {
+            setLoading(false);
+            setMessage('Message sent successfully! I will get back to you soon.');
+            e.target.reset();
+          }, (error) => {
+            setLoading(false);
+            if (error.text && error.text.includes("The public key is required")) {
+              setMessage('Your email configuration is pending. The form UI works perfectly!');
+              e.target.reset();
+            } else {
+              setMessage('Something went wrong. Please reach out via email directly.');
+            }
+          });
+      };
+
+      const staggerContainer = {
+        hidden: { opacity: 0 },
+        show: { opacity: 1, transition: { staggerChildren: 0.15 } }
+      };
+
+      const slideUp = {
+        hidden: { opacity: 0, y: 20 },
+        show: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 100 } }
+      };
+
+      return (
+        <PageWrapper>
+          <section className="py-24 px-4 relative min-h-[100vh] flex flex-col justify-center overflow-hidden">
+            <div className="absolute top-[30%] left-[-10%] w-[600px] h-[600px] bg-primary/10 rounded-full blur-[200px] -z-10 pointer-events-none"></div>
+            <div className="absolute bottom-[-10%] right-[-5%] w-[700px] h-[700px] bg-accent/10 rounded-full blur-[180px] -z-10 pointer-events-none animate-pulse"></div>
+
+            <div className="max-w-5xl mx-auto w-full z-10 relative">
+              <motion.div initial={{ opacity: 0, y: -20, scale: 0.9 }} whileInView={{ opacity: 1, y: 0, scale: 1 }} viewport={{ once: true }} transition={{ duration: 0.6, type: "spring" }} className="text-center mb-16">
+                <h2 className="text-4xl md:text-5xl font-extrabold text-white mb-6 tracking-tight flex items-center justify-center gap-4">
+                  <motion.i animate={{ rotate: [0, -10, 10, 0] }} transition={{ repeat: Infinity, duration: 4, ease: "easeInOut" }} className="far fa-envelope text-primary drop-shadow-[0_0_20px_rgba(6,182,212,0.8)] border border-primary/50 rounded-xl px-3 py-2 bg-primary/10"></motion.i>
+                  <span className="drop-shadow-[0_0_15px_rgba(255,255,255,0.3)]"><PremiumText color="#ffb347" glow="rgba(255, 179, 71, 0.35)">Get In Touch</PremiumText></span>
+                </h2>
+                <p className="text-[#9ca3af] max-w-2xl mx-auto text-[1.1rem] leading-relaxed">
+                  <PremiumText color="#38bdf8" glow="rgba(56, 189, 248, 0.35)">Whether you have a question, a project proposal, or just want to say hi — my inbox is always open.</PremiumText>
+                </p>
+              </motion.div>
+
+              <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
+                <motion.div
+                  variants={staggerContainer} initial="hidden" whileInView="show" viewport={{ once: true }}
+                  className="lg:col-span-2 bg-gradient-to-b from-[#0F172A]/90 to-[#0B0B0E]/90 backdrop-blur-2xl border border-white/10 rounded-3xl p-8 md:p-10 flex flex-col shadow-[0_20px_50px_-10px_rgba(0,0,0,0.6)] hover:border-primary/30 transition-colors duration-500 relative overflow-hidden group/box"
+                >
+                  <div className="absolute top-0 inset-x-0 h-[1px] bg-gradient-to-r from-transparent via-primary/40 to-transparent"></div>
+
+                  <motion.h3 variants={slideUp} className="text-2xl font-bold text-white mb-10 tracking-wide"><PremiumText color="#f97316" glow="rgba(249, 115, 22, 0.35)">Contact Information</PremiumText></motion.h3>
+
+                  <div className="space-y-8 flex-1">
+                    <motion.a variants={slideUp} href="mailto:csegulshansingh0@gmail.com" className="flex items-center gap-5 group hover:-translate-y-1 transition-transform duration-300">
+                      <div className="w-14 h-14 flex-shrink-0 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center group-hover:bg-primary/20 group-hover:border-primary/50 transition-all duration-300">
+                        <i className="far fa-envelope text-[#9ca3af] group-hover:text-primary text-xl transition-colors"></i>
+                      </div>
+                      <span className="text-[#9ca3af] group-hover:text-white transition-colors font-medium break-all text-[15px]"><PremiumText color="#f87171" glow="rgba(248, 113, 113, 0.35)">thegulshansingh0@gmail.com</PremiumText></span>
+                    </motion.a>
+
+                    <motion.a variants={slideUp} href="tel:+919065320564" className="flex items-center gap-5 group hover:-translate-y-1 transition-transform duration-300">
+                      <div className="w-14 h-14 flex-shrink-0 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center group-hover:bg-green-500/20 group-hover:border-green-500/50 transition-all duration-300">
+                        <i className="fas fa-phone text-[#9ca3af] group-hover:text-green-400 text-xl transition-colors"></i>
+                      </div>
+                      <span className="text-[#9ca3af] group-hover:text-white transition-colors font-medium break-all text-[15px]"><PremiumText color="#34d399" glow="rgba(52, 211, 153, 0.35)">+91 90653 20564</PremiumText></span>
+                    </motion.a>
+
+                    <motion.a variants={slideUp} href="https://github.com/infinit-alt" target="_blank" className="flex items-center gap-5 group hover:-translate-y-1 transition-transform duration-300">
+                      <div className="w-14 h-14 flex-shrink-0 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center group-hover:bg-white/20 group-hover:border-white/50 transition-all duration-300">
+                        <i className="fab fa-github text-[#9ca3af] group-hover:text-white text-xl transition-colors"></i>
+                      </div>
+                      <span className="text-[#9ca3af] group-hover:text-white transition-colors font-medium break-all text-[15px]"><PremiumText color="#8b5cf6" glow="rgba(139, 92, 246, 0.35)">github.com/infinit-alt</PremiumText></span>
+                    </motion.a>
+
+                    <motion.a variants={slideUp} href="https://www.linkedin.com/in/gulshan-singh-8a1522322" target="_blank" className="flex items-center gap-5 group hover:-translate-y-1 transition-transform duration-300">
+                      <div className="w-14 h-14 flex-shrink-0 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center group-hover:bg-[#0a66c2]/20 group-hover:border-[#0a66c2]/50 transition-all duration-300">
+                        <i className="fab fa-linkedin-in text-[#9ca3af] group-hover:text-[#0a66c2] text-xl transition-colors"></i>
+                      </div>
+                      <span className="text-[#9ca3af] group-hover:text-white transition-colors font-medium break-all text-[15px]"><PremiumText color="#38bdf8" glow="rgba(56, 189, 248, 0.35)">linkedin.com/in/gulshan-singh-8a1522322</PremiumText></span>
+                    </motion.a>
+
+                    <motion.a variants={slideUp} href="https://www.facebook.com/profile.php?id=100011711962279" target="_blank" className="flex items-center gap-5 group hover:-translate-y-1 transition-transform duration-300">
+                      <div className="w-14 h-14 flex-shrink-0 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center group-hover:bg-[#1877f2]/20 group-hover:border-[#1877f2]/50 transition-all duration-300">
+                        <i className="fab fa-facebook-f text-[#9ca3af] group-hover:text-[#1877f2] text-xl transition-colors"></i>
+                      </div>
+                      <span className="text-[#9ca3af] group-hover:text-white transition-colors font-medium break-all text-[15px]"><PremiumText color="#fbbf24" glow="rgba(251, 191, 36, 0.35)">facebook.com/gulshan.singh</PremiumText></span>
+                    </motion.a>
+
+                    <motion.a variants={slideUp} href="https://www.instagram.com/gulshansingh02?igsh=MTF3OHAyZnBtd3h5ag==" target="_blank" className="flex items-center gap-5 group hover:-translate-y-1 transition-transform duration-300">
+                      <div className="w-14 h-14 flex-shrink-0 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center group-hover:bg-[#e1306c]/20 group-hover:border-[#e1306c]/50 transition-all duration-300">
+                        <i className="fab fa-instagram text-[#9ca3af] group-hover:text-[#e1306c] text-xl transition-colors"></i>
+                      </div>
+                      <span className="text-[#9ca3af] group-hover:text-white transition-colors font-medium break-all text-[15px]"><PremiumText color="#f472b6" glow="rgba(244, 114, 182, 0.35)">instagram.com/gulshansingh02</PremiumText></span>
+                    </motion.a>
+
+                    <motion.div variants={slideUp} className="flex items-center gap-5 group">
+                      <div className="w-14 h-14 flex-shrink-0 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center">
+                        <i className="fas fa-map-marker-alt text-[#9ca3af] text-xl"></i>
+                      </div>
+                      <span className="text-[#9ca3af] font-medium text-[15px]"><PremiumText color="#22d3ee" glow="rgba(34, 211, 238, 0.35)">KP8BC, KIIT, Patia, Bhubaneswar, Odisha — 751024, India</PremiumText></span>
+                    </motion.div>
+                  </div>
+
+                  <motion.hr variants={slideUp} className="border-white/10 my-8" />
+
+                  <motion.a variants={slideUp} href="resume.pdf" download="Gulshan_Singh_CV.pdf" className="relative group overflow-hidden w-full bg-[#0F172A] border border-primary/30 text-primary hover:text-white font-bold py-4 rounded-xl flex items-center justify-center gap-3 transition-all duration-500 hover:shadow-[0_0_25px_rgba(6,182,212,0.4)] hover:scale-[1.02]">
+                    <div className="absolute inset-0 bg-gradient-to-r from-primary to-accent opacity-0 group-hover:opacity-100 transition-opacity duration-500 z-0"></div>
+                    <span className="relative z-10 flex items-center gap-3">
+                      <i className="fas fa-download group-hover:-translate-y-1 transition-transform"></i> Download Resume
+                    </span>
+                  </motion.a>
+                </motion.div>
+
+                <motion.div
+                  initial={{ opacity: 0, x: 50 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} transition={{ duration: 0.7, type: "spring", bounce: 0.3 }}
+                  className="lg:col-span-3 bg-gradient-to-bl from-[#0F172A]/90 to-[#0B0B0E]/90 backdrop-blur-2xl border border-white/10 rounded-3xl p-8 md:p-10 relative overflow-hidden shadow-[0_20px_50px_-10px_rgba(0,0,0,0.6)] group/form hover:border-accent/30 transition-colors duration-500"
+                >
+                  <div className="absolute top-0 inset-x-0 h-[1px] bg-gradient-to-r from-transparent via-accent/40 to-transparent"></div>
+                  <div className="absolute top-0 right-0 w-[400px] h-[400px] bg-accent/10 rounded-full blur-[100px] -z-10 pointer-events-none opacity-50 group-hover/form:opacity-100 transition-opacity duration-1000"></div>
+
+                  <form ref={formRef} onSubmit={sendEmail} className="space-y-6 relative z-10">
+                    <div>
+                      <label className="block text-[13px] font-bold text-white mb-2 tracking-wide">Name</label>
+                      <input type="text" name="user_name" required className="w-full bg-[#050505]/80 border border-white/10 rounded-xl px-5 py-4 text-[#9ca3af] placeholder-slate-700 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary focus:text-white focus:-translate-y-1 transition-all duration-300" placeholder="John Doe" />
+                    </div>
+                    <div>
+                      <label className="block text-[13px] font-bold text-white mb-2 tracking-wide">Email</label>
+                      <input type="email" name="user_email" required className="w-full bg-[#050505]/80 border border-white/10 rounded-xl px-5 py-4 text-[#9ca3af] placeholder-slate-700 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary focus:text-white focus:-translate-y-1 transition-all duration-300" placeholder="john@example.com" />
+                    </div>
+                    <div>
+                      <label className="block text-[13px] font-bold text-white mb-2 tracking-wide">Message</label>
+                      <textarea name="message" rows="5" required className="w-full bg-[#050505]/80 border border-white/10 rounded-xl px-5 py-4 text-[#9ca3af] placeholder-slate-700 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary focus:text-white focus:-translate-y-1 transition-all duration-300 resize-none" placeholder="Let's build something amazing together..."></textarea>
+                    </div>
+
+                    <button type="submit" disabled={loading} className="w-full relative group/btn overflow-hidden rounded-xl p-[1px] mt-4 hover:shadow-[0_0_30px_rgba(139,92,246,0.6)] hover:scale-[1.02] transition-all duration-300">
+                      <span className="absolute inset-0 bg-gradient-to-r from-primary via-accent to-secondary animate-pulse opacity-50 group-hover/btn:opacity-100 transition-opacity"></span>
+                      <div className="relative flex items-center justify-center gap-3 w-full bg-[#0F172A] px-8 py-4 rounded-xl text-white font-bold tracking-wide transition-colors group-hover/btn:bg-transparent">
+                        {loading ? 'Sending...' : 'Send Message'}
+                        {loading ? <i className="fas fa-spinner fa-spin"></i> : <i className="far fa-paper-plane group-hover/btn:translate-x-1 group-hover/btn:-translate-y-1 transition-transform duration-300"></i>}
+                      </div>
+                    </button>
+                    {message && <p className="text-center mt-4 font-bold text-accent">{message}</p>}
+                  </form>
+                </motion.div>
+              </div>
+
+              <div className="mt-20 text-[#9ca3af] text-[13px] flex flex-col items-center justify-center relative z-10 opacity-60 hover:opacity-100 transition-opacity">
+                <p>Designed & Built by Gulshan Singh &copy; {(new Date()).getFullYear()}</p>
+              </div>
+            </div>
+          </section>
+        </PageWrapper>
+      );
+    };
+
+    const App = () => {
+      const [currentHash, setCurrentHash] = useState(window.location.hash || '#home');
+
+      useEffect(() => {
+        const words = document.querySelectorAll('.premium-word');
+        const activate = (el) => {
+          words.forEach((w) => w.classList.toggle('is-active', w === el));
+        };
+        const reset = () => words.forEach((w) => w.classList.remove('is-active'));
+        const handlers = [];
+
+        words.forEach((word) => {
+          const handleEnter = () => activate(word);
+          handlers.push({ word, handleEnter });
+          word.addEventListener('mouseenter', handleEnter);
+          word.addEventListener('mouseleave', reset);
+        });
+
+        return () => {
+          handlers.forEach(({ word, handleEnter }) => {
+            word.removeEventListener('mouseenter', handleEnter);
+          });
+          words.forEach((word) => {
+            word.removeEventListener('mouseleave', reset);
+          });
+        };
+      }, []);
+
+      useEffect(() => {
+        const handleHashChange = () => {
+          let hash = window.location.hash || '#home';
+          if (hash === '#resume' || hash === '#experience') hash = '#education';
+          setCurrentHash(hash);
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        };
+        window.addEventListener('hashchange', handleHashChange);
+        return () => window.removeEventListener('hashchange', handleHashChange);
+      }, []);
+
+      const renderRouter = () => {
+        switch (currentHash) {
+          case '#home': return <Hero key="hero" />;
+          case '#about': return <About key="about" />;
+          case '#skills': return <Skills key="skills" />;
+          case '#projects': return <Projects key="projects" />;
+          case '#training': return <Training key="training" />;
+          case '#education': return <Education key="education" />;
+          case '#certificates': return <Certificates key="certs" />;
+          case '#contact': return <Contact key="contact" />;
+          default: return <Hero key="default" />;
+        }
+      };
+
+      return (
+        <>
+          <Navbar currentHash={currentHash} />
+          <main className="pt-20 pb-12 w-full">
+            <AnimatePresence mode="wait">
+              {renderRouter()}
+            </AnimatePresence>
+          </main>
+        </>
+      );
+    };
+
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(<App />);
+  </script>
+
+  <script>
+  /* ===== Exomium background: WebGL particle field =====
+     Self-contained IIFE. Touches ONLY #scene-canvas. Does not read from
+     or write to any portfolio component, so it cannot affect layout,
+     content, navigation, or existing functionality. */
+  (function(){
+    "use strict";
+    const canvas = document.getElementById('scene-canvas');
+    if (!canvas || typeof THREE === 'undefined') return;
+
+    const isSmall = window.innerWidth < 768;
+    const reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true });
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.setSize(window.innerWidth, window.innerHeight);
+
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 100);
+    camera.position.set(0, 0, 9);
+
+    // ---- Ambient starfield ----
+    const starCount = isSmall ? 400 : 900;
+    const starGeo = new THREE.BufferGeometry();
+    const starPos = new Float32Array(starCount * 3);
+    for (let i = 0; i < starCount; i++) {
+      starPos[i * 3]     = (Math.random() - 0.5) * 60;
+      starPos[i * 3 + 1] = (Math.random() - 0.5) * 60;
+      starPos[i * 3 + 2] = (Math.random() - 0.5) * 60 - 10;
+    }
+    starGeo.setAttribute('position', new THREE.BufferAttribute(starPos, 3));
+    const starMat = new THREE.PointsMaterial({ color: 0x8890b8, size: 0.045, transparent: true, opacity: 0.5, blending: THREE.AdditiveBlending, depthWrite: false });
+    const stars = new THREE.Points(starGeo, starMat);
+    scene.add(stars);
+
+    // ---- Morphing particle core (color-matched to portfolio palette) ----
+    const N = isSmall ? 1800 : 4200;
+    const geometry = new THREE.BufferGeometry();
+    const positions = new Float32Array(N * 3);
+    const colors = new Float32Array(N * 3);
+
+    const cOrange = new THREE.Color(0xf97316);  // primary
+    const cCyan   = new THREE.Color(0x06b6d4);  // secondary
+    const cViolet = new THREE.Color(0x8b5cf6);  // accent
+
+    for (let i = 0; i < N; i++) {
+      const t = i / N;
+      const c = t < 0.5
+        ? cViolet.clone().lerp(cCyan, t / 0.5)
+        : cCyan.clone().lerp(cOrange, (t - 0.5) / 0.5);
+      colors[i * 3] = c.r; colors[i * 3 + 1] = c.g; colors[i * 3 + 2] = c.b;
+    }
+
+    function shapeOrb(i, n, out) {
+      const phi = Math.acos(-1 + (2 * i) / n);
+      const theta = Math.sqrt(n * Math.PI) * phi;
+      const r = 2.6 + Math.sin(i * 12.9898) * 0.06;
+      out[0] = r * Math.cos(theta) * Math.sin(phi);
+      out[1] = r * Math.sin(theta) * Math.sin(phi);
+      out[2] = r * Math.cos(phi);
+    }
+    function shapeNetwork(i, n, out) {
+      const u = (i / n) * Math.PI * 2 * 7;
+      const v = (i / n) * Math.PI * 2;
+      const R = 3.4, rr = 1.3;
+      out[0] = (R + rr * Math.cos(v)) * Math.cos(u) * 0.6 + Math.sin(i * 3.1) * 1.4;
+      out[1] = (R + rr * Math.cos(v)) * Math.sin(u) * 0.6 + Math.cos(i * 2.3) * 1.4;
+      out[2] = rr * Math.sin(v) * 1.6 + Math.sin(i * 5.7) * 0.8;
+    }
+    function shapeGrid(i, n, out) {
+      const side = Math.ceil(Math.sqrt(n));
+      const x = (i % side) / side - 0.5;
+      const y = Math.floor(i / side) / side - 0.5;
+      out[0] = x * 9;
+      out[1] = Math.sin(x * 6 + y * 4) * 0.5;
+      out[2] = y * 9;
+    }
+    function shapeTunnel(i, n, out) {
+      const ring = i % 60;
+      const depth = Math.floor(i / 60);
+      const a = (ring / 60) * Math.PI * 2;
+      const rad = 2.2 + Math.sin(depth * 0.4) * 0.3;
+      out[0] = Math.cos(a) * rad;
+      out[1] = Math.sin(a) * rad;
+      out[2] = -depth * 0.35 + 6;
+    }
+    function shapeCore(i, n, out) {
+      const phi = Math.acos(-1 + (2 * i) / n);
+      const theta = Math.sqrt(n * Math.PI) * phi * 1.5;
+      const r = 1.6 + Math.sin(i * 7.1) * 0.15;
+      out[0] = r * Math.cos(theta) * Math.sin(phi);
+      out[1] = r * Math.sin(theta) * Math.sin(phi);
+      out[2] = r * Math.cos(phi);
+    }
+
+    const keyframes = [shapeOrb, shapeNetwork, shapeGrid, shapeTunnel, shapeCore];
+    const kfPositions = keyframes.map(fn => {
+      const arr = new Float32Array(N * 3);
+      const tmp = [0, 0, 0];
+      for (let i = 0; i < N; i++) { fn(i, N, tmp); arr[i * 3] = tmp[0]; arr[i * 3 + 1] = tmp[1]; arr[i * 3 + 2] = tmp[2]; }
+      return arr;
+    });
+
+    for (let i = 0; i < N * 3; i++) positions[i] = kfPositions[0][i];
+
+    geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+    geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+
+    const material = new THREE.PointsMaterial({
+      size: 0.055, vertexColors: true, transparent: true, opacity: 0.9,
+      blending: THREE.AdditiveBlending, depthWrite: false, sizeAttenuation: true
+    });
+    const core = new THREE.Points(geometry, material);
+    scene.add(core);
+
+    // ---- Scroll progress drives the morph ----
+    let scrollProgress = 0;
+    function updateScroll() {
+      const h = document.documentElement.scrollHeight - window.innerHeight;
+      scrollProgress = h > 0 ? window.scrollY / h : 0;
+    }
+    window.addEventListener('scroll', updateScroll, { passive: true });
+    updateScroll();
+
+    // ---- Mouse parallax ----
+    let mouseX = 0, mouseY = 0, targetRX = 0, targetRY = 0;
+    window.addEventListener('mousemove', (e) => {
+      mouseX = (e.clientX / window.innerWidth) * 2 - 1;
+      mouseY = (e.clientY / window.innerHeight) * 2 - 1;
+    });
+
+    const posAttr = geometry.attributes.position;
+    const clock = new THREE.Clock();
+
+    function frame() {
+      const t = clock.getElapsedTime();
+      const segments = keyframes.length - 1;
+      const scaled = Math.min(scrollProgress, 0.999) * segments;
+      const idx = Math.floor(scaled);
+      const localT = scaled - idx;
+      const easedT = localT * localT * (3 - 2 * localT);
+
+      const A = kfPositions[idx];
+      const B = kfPositions[Math.min(idx + 1, kfPositions.length - 1)];
+
+      for (let i = 0; i < N; i++) {
+        const ix = i * 3;
+        const wob = reduceMotion ? 0 : Math.sin(t * 0.6 + i * 0.13) * 0.05;
+        posAttr.array[ix]     = A[ix]     + (B[ix] - A[ix]) * easedT + wob;
+        posAttr.array[ix + 1] = A[ix + 1] + (B[ix + 1] - A[ix + 1]) * easedT + (reduceMotion ? 0 : Math.cos(t * 0.5 + i * 0.11) * 0.05);
+        posAttr.array[ix + 2] = A[ix + 2] + (B[ix + 2] - A[ix + 2]) * easedT;
+      }
+      posAttr.needsUpdate = true;
+
+      if (!reduceMotion) {
+        core.rotation.y = t * 0.06 + scrollProgress * 2.4;
+        core.rotation.x = Math.sin(t * 0.15) * 0.08;
+        stars.rotation.y = t * 0.01;
+      }
+
+      targetRX += (mouseY * 0.35 - targetRX) * 0.04;
+      targetRY += (mouseX * 0.45 - targetRY) * 0.04;
+      camera.position.x = targetRY * 1.4;
+      camera.position.y = -targetRX * 1.2;
+      camera.position.z = 9 - scrollProgress * 2.2;
+      camera.lookAt(0, 0, 0);
+
+      renderer.render(scene, camera);
+      requestAnimationFrame(frame);
+    }
+    frame();
+
+    window.addEventListener('resize', () => {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+    });
+  })();
+  </script>
+</body>
+
+</html>
